@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package tarefas;
+
+service GerenciadorDeTarefas {
+  rpc CriarTarefa (TarefaRequest) returns (TarefaResponse);
+  rpc ListarTarefas (ListaRequest) returns (ListaResponse);
+  rpc AtualizarTarefa (TarefaAtualizacaoRequest) returns (TarefaResponse);
+  rpc DeletarTarefa (DeletarRequest) returns (DeletarResponse);
+}
+
+message Tarefa {
+  string id = 1;
+  string titulo = 2;
+  string descricao = 3;
+  string status = 4;
+  string data_limite = 5;
+  string responsavel = 6;
+}
+
+message TarefaRequest {
+  string titulo = 1;
+  string descricao = 2;
+  string data_limite = 3;
+  string responsavel = 4;
+}
+
+message TarefaResponse {
+  string mensagem = 1;
+  Tarefa tarefa = 2;
+}
+
+message ListaRequest {}
+
+message ListaResponse {
+  repeated Tarefa tarefas = 1;
+}
+
+message TarefaAtualizacaoRequest {
+  string id = 1;
+  string titulo = 2;
+  string descricao = 3;
+  string status = 4;
+  string data_limite = 5;
+  string responsavel = 6;
+}
+
+message DeletarRequest {
+  string id = 1;
+}
+
+message DeletarResponse {
+  string mensagem = 1;
+  bool sucesso = 2;
+}
