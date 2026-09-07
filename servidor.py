@@ -6,18 +6,24 @@ import grpc
 import tarefas_pb2
 import tarefas_pb2_grpc
 
-PASTA_DADOS = "dados_tarefas"
 
-class ServenciadorDeTarefas(tarefas_pb2_grpc.GerenciadorDeTarefasServicer):
+PASTA = "dados_tarefas"
+
+
+class GerenciadorDeTarefasServicer(
+        tarefas_pb2_grpc.GerenciadorDeTarefasServicer):
 
     def __init__(self):
-        if not os.path.exists(PASTA_DADOS):
-            os.makedirs(PASTA_DADOS)
+        if not os.path.exists(PASTA):
+            os.makedirs(PASTA)
 
     def CriarTarefa(self, request, context):
-        id_tarefa = str(uuid.uuid4())
-        tarefa_dict = {
-            "id": id_tarefa,
+        print(f"[REQ] Criando nova tarefa: '{request.titulo}'")
+
+        id_novo = str(uuid.uuid4())
+
+        dados = {
+            "id": id_novo,
             "titulo": request.titulo,
             "descricao": request.descricao,
             "status": "Pendente",
@@ -25,30 +31,45 @@ class ServenciadorDeTarefas(tarefas_pb2_grpc.GerenciadorDeTarefasServicer):
             "responsavel": request.responsavel
         }
 
-        caminho_arquivo = os.path.join(PASTA_DADOS, f"{id_tarefa}.json")
-        with open(caminho_arquivo, "w", encoding="utf-8") as f:
-            json.dump(tarefa_dict, f, ensure_ascii=False, indent=4)
+        caminho = os.path.join(PASTA, f"{id_novo}.json")
 
-        tarefa_proto = tarefas_pb2.Tarefa(**tarefa_dict)
-        return tarefas_pb2.TarefaResponse(mensagem="Tarefa criada com sucesso!", tarefa=tarefa_proto)
+        with open(caminho, "w", encoding="utf-8") as f:
+            json.dump(dados, f, ensure_ascii=False, indent=4)
+
+        t_proto = tarefas_pb2.Tarefa(**dados)
+
+        return tarefas_pb2.TarefaResponse(
+            mensagem="Tarefa salva com sucesso!",
+            tarefa=t_proto
+        )
 
     def ListarTarefas(self, request, context):
-        tarefas = []
-        for arquivo in os.listdir(PASTA_DADOS):
-            if arquivo.endswith(".json"):
-                caminho_arquivo = os.path.join(PASTA_DADOS, arquivo)
-                with open(caminho_arquivo, "r", encoding="utf-8") as f:
-                    tarefa_dict = json.load(f)
-                    tarefas.append(tarefas_pb2.Tarefa(**tarefa_dict))
+        print("[REQ] Listando todas as tarefas...")
 
-        return tarefas_pb2.ListaResponse(tarefas=tarefas)
+        lista = []
+
+        for arq in os.listdir(PASTA):
+            if arq.endswith(".json"):
+                caminho = os.path.join(PASTA, arq)
+
+                with open(caminho, "r", encoding="utf-8") as f:
+                    dados = json.load(f)
+                    lista.append(tarefas_pb2.Tarefa(**dados))
+
+        return tarefas_pb2.ListaResponse(tarefas=lista)
 
     def AtualizarTarefa(self, request, context):
-        caminho_arquivo = os.path.join(PASTA_DADOS, f"{request.id}.json")
-        if not os.path.exists(caminho_arquivo):
-            context.abort(grpc.StatusCode.NOT_FOUND, "Tarefa não encontrada.")
+        print(f"[REQ] Atualizando tarefa: {request.id}")
 
-        tarefa_dict = {
+        caminho = os.path.join(PASTA, f"{request.id}.json")
+
+        if not os.path.exists(caminho):
+            context.abort(
+                grpc.StatusCode.NOT_FOUND,
+                "Tarefa nao encontrada."
+            )
+
+        dados = {
             "id": request.id,
             "titulo": request.titulo,
             "descricao": request.descricao,
@@ -57,28 +78,52 @@ class ServenciadorDeTarefas(tarefas_pb2_grpc.GerenciadorDeTarefasServicer):
             "responsavel": request.responsavel
         }
 
-        with open(caminho_arquivo, "w", encoding="utf-8") as f:
-            json.dump(tarefa_dict, f, ensure_ascii=False, indent=4)
+        with open(caminho, "w", encoding="utf-8") as f:
+            json.dump(dados, f, ensure_ascii=False, indent=4)
 
-        tarefa_proto = tarefas_pb2.Tarefa(**tarefa_dict)
-        return tarefas_pb2.TarefaResponse(mensagem="Tarefa atualizada com sucesso!", tarefa=tarefa_proto)
+        t_proto = tarefas_pb2.Tarefa(**dados)
+
+        return tarefas_pb2.TarefaResponse(
+            mensagem="Tarefa atualizada!",
+            tarefa=t_proto
+        )
 
     def DeletarTarefa(self, request, context):
-        caminho_arquivo = os.path.join(PASTA_DADOS, f"{request.id}.json")
-        if not os.path.exists(caminho_arquivo):
-            return tarefas_pb2.DeletarResponse(mensagem="Tarefa não encontrada.", sucesso=False)
+        print(f"[REQ] Deletando tarefa: {request.id}")
 
-        os.remove(caminho_arquivo)
-        return tarefas_pb2.DeletarResponse(mensagem="Tarefa deletada com sucesso!", sucesso=True)
+        caminho = os.path.join(PASTA, f"{request.id}.json")
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    tarefas_pb2_grpc.add_GerenciadorDeTarefasServicer_to_server(ServenciadorDeTarefas(), server)
-    server.add_insecure_port('[::]:33021')
+        if not os.path.exists(caminho):
+            return tarefas_pb2.DeletarResponse(
+                mensagem="Tarefa nao encontrada.",
+                sucesso=False
+            )
+
+        os.remove(caminho)
+
+        return tarefas_pb2.DeletarResponse(
+            mensagem="Tarefa removida com sucesso!",
+            sucesso=True
+        )
+
+
+def iniciar_servidor():
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=10)
+    )
+
+    tarefas_pb2_grpc.add_GerenciadorDeTarefasServicer_to_server(
+        GerenciadorDeTarefasServicer(),
+        server
+    )
+
+    server.add_insecure_port("[::]:33021")
     server.start()
-    print("Servidor gRPC rodando na porta 33021...")
+
+    print("=== Servidor gRPC rodando na porta 33021 ===")
+
     server.wait_for_termination()
 
-if __name__ == '__main__':
-    serve()
 
+if __name__ == "__main__":
+    iniciar_servidor()
