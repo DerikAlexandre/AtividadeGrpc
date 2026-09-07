@@ -3,7 +3,11 @@ import tarefas_pb2
 import tarefas_pb2_grpc
 
 def run():
-    with grpc.insecure_channel('192.168.1.35:33021') as channel:
+
+    ip_servidor = input("Digite o IP do servidor gRPC: ") #aqui insere o ip da maquina do cliente
+    endereco = f"{ip_servidor}:33021"
+
+    with grpc.insecure_channel(endereco) as channel:
         stub = tarefas_pb2_grpc.GerenciadorDeTarefasStub(channel)
 
         while True:
@@ -44,7 +48,7 @@ def run():
                 resp = input("Novo Responsável: ")
 
                 resposta = stub.AtualizarTarefa(tarefas_pb2.TarefaAtualizacaoRequest(
-                    id=id_t, titulo=titulo, descricao=desc, status=status, data_limite=data, responsabil=resp
+                    id=id_t, titulo=titulo, descricao=desc, status=status, data_limite=data, responsavel=resp
                 ))
                 print(f"\n{resposta.mensagem}")
 
