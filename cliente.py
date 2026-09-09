@@ -15,7 +15,7 @@ def main():
     stub = tarefas_pb2_grpc.GerenciadorDeTarefasStub(channel)
 
     while True:
-        print("\n=== MENU ===")
+        print("\nMENU:")
         print("1 Cadastrar tarefa")
         print("2 Listar todas as tarefas")
         print("3 Atualizar tarefas")
@@ -25,7 +25,7 @@ def main():
         op = input("Escolhas: ").strip()
 
         if op == "1":
-            print("\n=== Novo cadastro ===")
+            print("\nNovo cadastro")
 
             titulo = input("Titulo: ")
             desc = input("Descricao: ")
@@ -43,13 +43,13 @@ def main():
 
             res = stub.CriarTarefa(dados)
 
-            print(f"\n>> {res.mensagem} (ID: {res.tarefa.id})")
+            print(f"\nTarefa cadastrada! (ID: {res.tarefa.id})")
 
         elif op == "2":
             dados = tarefas_pb2.ListaRequest()
             res = stub.ListarTarefas(dados)
 
-            print("\n--- Lista das tarefas ---")
+            print("\nLista das tarefas:")
 
             if not res.tarefas:
                 print("Nenhuma tarefa cadastrada até o momento.")
@@ -59,11 +59,10 @@ def main():
                 print(f"Titulo: {item.titulo} [{item.status}]")
                 print(f"Responsavel: {item.responsavel} | Prazo: {item.data_limite}")
                 print(f"Detalhes: {item.descricao}")
-                print(f"Prioridade: {item.prioridade}")
-                print("-" * 35)
+                print(f"Prioridade: {item.prioridade}\n")
 
         elif op == "3":
-            print("\n--- Atualizar Tarefa ---")
+            print("\nAtualizar Tarefa:")
 
             id_t = input("ID da tarefa: ")
             titulo = input("Novo titulo: ")
@@ -85,7 +84,7 @@ def main():
 
             res = stub.AtualizarTarefa(dados)
 
-            print(f"\n{res.mensagem}")
+            print(f"\nTarefa atualizada! (ID: {res.tarefa.id})")
 
         elif op == "4":
             id_t = input("\nIDS para deletar: ")
@@ -93,7 +92,7 @@ def main():
             dados = tarefas_pb2.DeletarRequest(id=id_t)
             res = stub.DeletarTarefa(dados)
 
-            print(f"\n{res.mensagem}")
+            print(f"\nTarefa removida! (ID: {id_t})")
 
         elif op == "0":
             print("Saindo.")
