@@ -15,39 +15,39 @@ def main():
     stub = tarefas_pb2_grpc.GerenciadorDeTarefasStub(channel)
 
     while True:
-        print("\n=== GERENCIADOR DE TAREFAS ===")
-        print("1 - Cadastrar tarefa")
-        print("2 - Listar todas")
-        print("3 - Atualizar tarefa")
-        print("4 - Remover tarefa")
-        print("0 - Sair")
+        print("\n=== MENU ===")
+        print("1 Cadastrar tarefa")
+        print("2 Listar todas as tarefas")
+        print("3 Atualizar tarefas")
+        print("4 Remover tarefa")
+        print("0 Sair")
 
-        op = input("Opcao > ").strip()
+        op = input("Escolhas: ").strip()
 
         if op == "1":
-            print("\n--- Nova Tarefa ---")
+            print("\n=== Novo cadastro ===")
 
             titulo = input("Titulo: ")
             desc = input("Descricao: ")
             data = input("Data limite: ")
             resp = input("Responsavel: ")
 
-            req = tarefas_pb2.TarefaRequest(
+            dados = tarefas_pb2.TarefaRequest(
                 titulo=titulo,
                 descricao=desc,
                 data_limite=data,
                 responsavel=resp
             )
 
-            res = stub.CriarTarefa(req)
+            res = stub.CriarTarefa(dados)
 
             print(f"\n>> {res.mensagem} (ID: {res.tarefa.id})")
 
         elif op == "2":
-            req = tarefas_pb2.ListaRequest()
-            res = stub.ListarTarefas(req)
+            dados = tarefas_pb2.ListaRequest()
+            res = stub.ListarTarefas(dados)
 
-            print("\n--- TAREFAS CADASTRADAS ---")
+            print("\n--- Lista das tarefas ---")
 
             if not res.tarefas:
                 print("Nenhuma tarefa cadastrada até o momento.")
@@ -69,7 +69,7 @@ def main():
             data = input("Nova data limite: ")
             resp = input("Novo responsavel: ")
 
-            req = tarefas_pb2.TarefaAtualizacaoRequest(
+            dados = tarefas_pb2.TarefaAtualizacaoRequest(
                 id=id_t,
                 titulo=titulo,
                 descricao=desc,
@@ -78,20 +78,20 @@ def main():
                 responsavel=resp
             )
 
-            res = stub.AtualizarTarefa(req)
+            res = stub.AtualizarTarefa(dados)
 
-            print(f"\n>> {res.mensagem}")
+            print(f"\n{res.mensagem}")
 
         elif op == "4":
-            id_t = input("\nID da tarefa a ser deletada: ")
+            id_t = input("\nIDS para deletar: ")
 
-            req = tarefas_pb2.DeletarRequest(id=id_t)
-            res = stub.DeletarTarefa(req)
+            dados = tarefas_pb2.DeletarRequest(id=id_t)
+            res = stub.DeletarTarefa(dados)
 
-            print(f"\n>> {res.mensagem}")
+            print(f"\n{res.mensagem}")
 
         elif op == "0":
-            print("Saindo...")
+            print("Saindo.")
             break
 
         else:

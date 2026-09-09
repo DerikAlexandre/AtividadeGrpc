@@ -7,104 +7,7 @@ import tarefas_pb2
 import tarefas_pb2_grpc
 
 
-PASTA = "dados_tarefas"
-
-
-class GerenciadorDeTarefasServicer(
-        tarefas_pb2_grpc.GerenciadorDeTarefasServicer):
-
-    def __init__(self):
-        if not os.path.exists(PASTA):
-            os.makedirs(PASTA)
-
-    def CriarTarefa(self, request, context):
-        print(f"[REQ] Criando nova tarefa: '{request.titulo}'")
-
-        id_novo = str(uuid.uuid4())
-
-        dados = {
-            "id": id_novo,
-            "titulo": request.titulo,
-            "descricao": request.descricao,
-            "status": "Pendente",
-            "data_limite": request.data_limite,
-            "responsavel": request.responsavel
-        }
-
-        caminho = os.path.join(PASTA, f"{id_novo}.json")
-
-        with open(caminho, "w", encoding="utf-8") as f:
-            json.dump(dados, f, ensure_ascii=False, indent=4)
-
-        t_proto = tarefas_pb2.Tarefa(**dados)
-
-        return tarefas_pb2.TarefaResponse(
-            mensagem="Tarefa salva com sucesso!",
-            tarefa=t_proto
-        )
-
-    def ListarTarefas(self, request, context):
-        print("[REQ] Listando todas as tarefas...")
-
-        lista = []
-
-        for arq in os.listdir(PASTA):
-            if arq.endswith(".json"):
-                caminho = os.path.join(PASTA, arq)
-
-                with open(caminho, "r", encoding="utf-8") as f:
-                    dados = json.load(f)
-                    lista.append(tarefas_pb2.Tarefa(**dados))
-
-        return tarefas_pb2.ListaResponse(tarefas=lista)
-
-    def AtualizarTarefa(self, request, context):
-        print(f"[REQ] Atualizando tarefa: {request.id}")
-
-        caminho = os.path.join(PASTA, f"{request.id}.json")
-
-        if not os.path.exists(caminho):
-            context.abort(
-                grpc.StatusCode.NOT_FOUND,
-                "Tarefa nao encontrada."
-            )
-
-        dados = {
-            "id": request.id,
-            "titulo": request.titulo,
-            "descricao": request.descricao,
-            "status": request.status,
-            "data_limite": request.data_limite,
-            "responsavel": request.responsavel
-        }
-
-        with open(caminho, "w", encoding="utf-8") as f:
-            json.dump(dados, f, ensure_ascii=False, indent=4)
-
-        t_proto = tarefas_pb2.Tarefa(**dados)
-
-        return tarefas_pb2.TarefaResponse(
-            mensagem="Tarefa atualizada!",
-            tarefa=t_proto
-        )
-
-    def DeletarTarefa(self, request, context):
-        print(f"[REQ] Deletando tarefa: {request.id}")
-
-        caminho = os.path.join(PASTA, f"{request.id}.json")
-
-        if not os.path.exists(caminho):
-            return tarefas_pb2.DeletarResponse(
-                mensagem="Tarefa nao encontrada.",
-                sucesso=False
-            )
-
-        os.remove(caminho)
-
-        return tarefas_pb2.DeletarResponse(
-            mensagem="Tarefa removida com sucesso!",
-            sucesso=True
-        )
+DIRETORIO = "storage"
 
 
 def iniciar_servidor():
@@ -120,9 +23,105 @@ def iniciar_servidor():
     server.add_insecure_port("[::]:33021")
     server.start()
 
-    print("=== Servidor gRPC rodando na porta 33021 ===")
+    print("Servidor gRPC na porta 33021...")
 
     server.wait_for_termination()
+
+
+class GerenciadorDeTarefasServicer(tarefas_pb2_grpc.GerenciadorDeTarefasServicer):
+
+    def __init__(self):
+        if not os.path.exists(DIRETORIO):
+            os.makedirs(DIRETORIO)
+
+    def ListarTarefas(self, request, context):
+        print("Buscando lista de tarefas...")
+
+        elementos = []
+
+        for arq in os.listdir(DIRETORIO):
+            if arq.endswith(".json"):
+                arquivo = os.path.join(DIRETORIO, arq)
+
+                with open(arquivo, "r", encoding="utf-8") as f:
+                    info = json.load(f)
+                    elementos.append(tarefas_pb2.Tarefa(**info))
+
+        return tarefas_pb2.ListaResponse(tarefas=elementos)
+
+    def CriarTarefa(self, request, context):
+        print(f"Salvando nova tarefa: '{request.titulo}'")
+
+        novo_id = str(uuid.uuid4())
+
+        info = {
+            "id": novo_id,
+            "titulo": request.titulo,
+            "descricao": request.descricao,
+            "status": "Pendente",
+            "data_limite": request.data_limite,
+            "responsavel": request.responsavel
+        }
+
+        arquivo = os.path.join(DIRETORIO, f"{novo_id}.json")
+
+        with open(arquivo, "w", encoding="utf-8") as f:
+            json.dump(info, f, ensure_ascii=False, indent=4)
+
+        obj = tarefas_pb2.Tarefa(**info)
+
+        return tarefas_pb2.TarefaResponse(
+            mensagem="Tarefa salva!",
+            tarefa=obj
+        )
+
+    def DeletarTarefa(self, request, context):
+        print(f"Removendo o registro: {request.id}")
+
+        arquivo = os.path.join(DIRETORIO, f"{request.id}.json")
+
+        if not os.path.exists(arquivo):
+            return tarefas_pb2.DeletarResponse(
+                mensagem="Tarefa nao encontrada.",
+                sucesso=False
+            )
+
+        os.remove(arquivo)
+
+        return tarefas_pb2.DeletarResponse(
+            mensagem="Tarefa removida!",
+            sucesso=True
+        )
+
+    def AtualizarTarefa(self, request, context):
+        print(f"Atualizando o registro: {request.id}")
+
+        arquivo = os.path.join(DIRETORIO, f"{request.id}.json")
+
+        if not os.path.exists(arquivo):
+            context.abort(
+                grpc.StatusCode.NOT_FOUND,
+                "Tarefa nao encontrada."
+            )
+
+        info = {
+            "id": request.id,
+            "titulo": request.titulo,
+            "descricao": request.descricao,
+            "status": request.status,
+            "data_limite": request.data_limite,
+            "responsavel": request.responsavel
+        }
+
+        with open(arquivo, "w", encoding="utf-8") as f:
+            json.dump(info, f, ensure_ascii=False, indent=4)
+
+        obj = tarefas_pb2.Tarefa(**info)
+
+        return tarefas_pb2.TarefaResponse(
+            mensagem="Tarefa atualizada!",
+            tarefa=obj
+        )
 
 
 if __name__ == "__main__":
