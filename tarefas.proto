@@ -16,6 +16,7 @@ message Tarefa {
   string status = 4;
   string data_limite = 5;
   string responsavel = 6;
+  string prioridade = 7;
 }
 
 message TarefaRequest {
@@ -23,6 +24,7 @@ message TarefaRequest {
   string descricao = 2;
   string data_limite = 3;
   string responsavel = 4;
+  string prioridade = 5;
 }
 
 message TarefaResponse {
@@ -43,6 +45,7 @@ message TarefaAtualizacaoRequest {
   string status = 4;
   string data_limite = 5;
   string responsavel = 6;
+  string prioridade = 7;
 }
 
 message DeletarRequest {

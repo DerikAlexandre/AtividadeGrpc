@@ -7,7 +7,7 @@ import tarefas_pb2
 import tarefas_pb2_grpc
 
 
-DIRETORIO = "storage"
+DIRETORIO = "tarefas"
 
 
 def iniciar_servidor():
@@ -60,7 +60,8 @@ class GerenciadorDeTarefasServicer(tarefas_pb2_grpc.GerenciadorDeTarefasServicer
             "descricao": request.descricao,
             "status": "Pendente",
             "data_limite": request.data_limite,
-            "responsavel": request.responsavel
+            "responsavel": request.responsavel,
+            "prioridade": request.prioridade
         }
 
         arquivo = os.path.join(DIRETORIO, f"{novo_id}.json")
@@ -110,7 +111,8 @@ class GerenciadorDeTarefasServicer(tarefas_pb2_grpc.GerenciadorDeTarefasServicer
             "descricao": request.descricao,
             "status": request.status,
             "data_limite": request.data_limite,
-            "responsavel": request.responsavel
+            "responsavel": request.responsavel,
+            "prioridade": request.prioridade
         }
 
         with open(arquivo, "w", encoding="utf-8") as f:

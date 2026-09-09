@@ -31,12 +31,14 @@ def main():
             desc = input("Descricao: ")
             data = input("Data limite: ")
             resp = input("Responsavel: ")
+            prioridade = input("Prioridade:")
 
             dados = tarefas_pb2.TarefaRequest(
                 titulo=titulo,
                 descricao=desc,
                 data_limite=data,
-                responsavel=resp
+                responsavel=resp,
+                prioridade=prioridade
             )
 
             res = stub.CriarTarefa(dados)
@@ -57,6 +59,7 @@ def main():
                 print(f"Titulo: {item.titulo} [{item.status}]")
                 print(f"Responsavel: {item.responsavel} | Prazo: {item.data_limite}")
                 print(f"Detalhes: {item.descricao}")
+                print(f"Prioridade: {item.prioridade}")
                 print("-" * 35)
 
         elif op == "3":
@@ -68,6 +71,7 @@ def main():
             status = input("Novo status (ex: Concluido): ")
             data = input("Nova data limite: ")
             resp = input("Novo responsavel: ")
+            prioridade = input("Nova prioridade: ")
 
             dados = tarefas_pb2.TarefaAtualizacaoRequest(
                 id=id_t,
@@ -75,7 +79,8 @@ def main():
                 descricao=desc,
                 status=status,
                 data_limite=data,
-                responsavel=resp
+                responsavel=resp,
+                prioridade=prioridade
             )
 
             res = stub.AtualizarTarefa(dados)
