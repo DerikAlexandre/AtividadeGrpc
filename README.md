@@ -34,10 +34,12 @@ python cliente.py
 ```
 * **Conexão:** O sistema solicitará o IP do servidor (caso seja ineserido o ip errado não será possivel cadastrar a tafera).
 * **Uso:** Um menu interativo aparecerá na tela. Basta digitar a opção desejada (1 a 4) para interagir com o gerenciador de tarefas. Será criado uma pasta com os dados das tarefas cadastradas num arquivo chamado taferas.txt.
+## Ambiente de Desenvolvimento e Testes
+Durante o desenvolvimento, foi utilizado três nós com endereços IP distintos na rede, combinando máquinas virtuais do VirtualBox (Ubuntu Desktop e Ubuntu Server) e a máquina física (Windows). A replicação pode ser feita adaptando os IPs conforme a infraestrutura disponível para cada testador.
 
-## 👨‍💻 Desenvolvedores
+## Desenvolvedores
 
-| Nome |
+| Nomes |
 |------|
 | **Aline de Brito Sério** |
 | **Derik Alexandre Alves de Andrade** |
