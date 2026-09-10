@@ -2,65 +2,105 @@ import grpc
 import tarefas_pb2
 import tarefas_pb2_grpc
 
-def run():
 
-    ip_servidor = input("Digite o IP do servidor gRPC: ") #aqui insere o ip da maquina do cliente
-    endereco = f"{ip_servidor}:33021"
+def main():
+    ip_servidor = input("Digite o IP do servidor: ").strip()
 
-    with grpc.insecure_channel(endereco) as channel:
-        stub = tarefas_pb2_grpc.GerenciadorDeTarefasStub(channel)
+    if not ip_servidor:
+        ip_servidor = "localhost"
 
-        while True:
-            print("\n--- SISTEMA DE TAREFAS ---")
-            print("1. Criar Tarefa")
-            print("2. Listar Tarefas")
-            print("3. Atualizar Tarefa")
-            print("4. Deletar Tarefa")
-            print("0. Sair")
+    url = f"{ip_servidor}:33021"
 
-            opcao = input("Escolha uma opção: ")
+    channel = grpc.insecure_channel(url)
+    stub = tarefas_pb2_grpc.GerenciadorDeTarefasStub(channel)
 
-            if opcao == '1':
-                titulo = input("Título: ")
-                desc = input("Descrição: ")
-                data = input("Data Limite: ")
-                resp = input("Responsável: ")
+    while True:
+        print("\nMENU:")
+        print("1 Cadastrar tarefa")
+        print("2 Listar todas as tarefas")
+        print("3 Atualizar tarefas")
+        print("4 Remover tarefa")
+        print("0 Sair")
 
-                resposta = stub.CriarTarefa(tarefas_pb2.TarefaRequest(
-                    titulo=titulo, descricao=desc, data_limite=data, responsavel=resp
-                ))
-                print(f"\n{resposta.mensagem} ID: {resposta.tarefa.id}")
+        op = input("Escolhas: ").strip()
 
-            elif opcao == '2':
-                resposta = stub.ListarTarefas(tarefas_pb2.ListaRequest())
-                print("\n--- LISTA DE TAREFAS ---")
-                for t in resposta.tarefas:
-                    print(f"ID: {t.id} | [{t.status}] {t.titulo} - Resp: {t.responsavel} (Até: {t.data_limite})")
-                    print(f"    Descrição: {t.descricao}")
-                    print("-" * 40)
+        if op == "1":
+            print("\nNovo cadastro")
 
-            elif opcao == '3':
-                id_t = input("ID da tarefa que deseja atualizar: ")
-                titulo = input("Novo Título: ")
-                desc = input("Nova Descrição: ")
-                status = input("Novo Status (ex: Concluído): ")
-                data = input("Nova Data Limite: ")
-                resp = input("Novo Responsável: ")
+            titulo = input("Titulo: ")
+            desc = input("Descricao: ")
+            data = input("Data limite: ")
+            resp = input("Responsavel: ")
+            prioridade = input("Prioridade:")
 
-                resposta = stub.AtualizarTarefa(tarefas_pb2.TarefaAtualizacaoRequest(
-                    id=id_t, titulo=titulo, descricao=desc, status=status, data_limite=data, responsavel=resp
-                ))
-                print(f"\n{resposta.mensagem}")
+            dados = tarefas_pb2.TarefaRequest(
+                titulo=titulo,
+                descricao=desc,
+                data_limite=data,
+                responsavel=resp,
+                prioridade=prioridade
+            )
 
-            elif opcao == '4':
-                id_t = input("ID da tarefa que deseja deletar: ")
-                resposta = stub.DeletarTarefa(tarefas_pb2.DeletarRequest(id=id_t))
-                print(f"\n{resposta.mensagem}")
+            res = stub.CriarTarefa(dados)
 
-            elif opcao == '0':
-                break
-            else:
-                print("Opção inválida!")
+            print(f"\nTarefa cadastrada! (ID: {res.tarefa.id})")
 
-if __name__ == '__main__':
-    run()
+        elif op == "2":
+            dados = tarefas_pb2.ListaRequest()
+            res = stub.ListarTarefas(dados)
+
+            print("\nLista das tarefas:")
+
+            if not res.tarefas:
+                print("Nenhuma tarefa cadastrada até o momento.")
+
+            for item in res.tarefas:
+                print(f"ID: {item.id}")
+                print(f"Titulo: {item.titulo} [{item.status}]")
+                print(f"Responsavel: {item.responsavel} | Prazo: {item.data_limite}")
+                print(f"Detalhes: {item.descricao}")
+                print(f"Prioridade: {item.prioridade}\n")
+
+        elif op == "3":
+            print("\nAtualizar Tarefa:")
+
+            id_t = input("ID da tarefa: ")
+            titulo = input("Novo titulo: ")
+            desc = input("Nova descricao: ")
+            status = input("Novo status (ex: Concluido): ")
+            data = input("Nova data limite: ")
+            resp = input("Novo responsavel: ")
+            prioridade = input("Nova prioridade: ")
+
+            dados = tarefas_pb2.TarefaAtualizacaoRequest(
+                id=id_t,
+                titulo=titulo,
+                descricao=desc,
+                status=status,
+                data_limite=data,
+                responsavel=resp,
+                prioridade=prioridade
+            )
+
+            res = stub.AtualizarTarefa(dados)
+
+            print(f"\nTarefa atualizada! (ID: {res.tarefa.id})")
+
+        elif op == "4":
+            id_t = input("\nIDS para deletar: ")
+
+            dados = tarefas_pb2.DeletarRequest(id=id_t)
+            res = stub.DeletarTarefa(dados)
+
+            print(f"\nTarefa removida! (ID: {id_t})")
+
+        elif op == "0":
+            print("Saindo.")
+            break
+
+        else:
+            print("Opcao invalida!")
+
+
+if __name__ == "__main__":
+    main()
