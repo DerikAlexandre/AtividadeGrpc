@@ -35,7 +35,7 @@ python cliente.py
 * **Conexão:** O sistema solicitará o IP do servidor (caso seja ineserido o ip errado não será possivel cadastrar a tafera).
 * **Uso:** Um menu interativo aparecerá na tela. Basta digitar a opção desejada (1 a 4) para interagir com o gerenciador de tarefas. Será criado uma pasta com os dados das tarefas cadastradas num arquivo chamado taferas.txt.
 
-## 👨‍💻 Desenvolvedores
+## Desenvolvedores
 
 | Nome |
 |------|
