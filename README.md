@@ -2,7 +2,7 @@
 
 **Membros da Equipe:**
 * Derik Alexandre Alves de Andrade
-* Maria Eugenia C. G. da Silva
+* Maria Eugenia Cavalcanti Gomes da Silva
 * Aline de Brito Sério
 * Felipe
 
